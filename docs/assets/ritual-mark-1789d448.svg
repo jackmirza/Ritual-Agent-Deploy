@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Ritual">
+  <rect width="96" height="96" rx="0" fill="#07010d"/>
+  <g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M48 10 60 22 48 34 36 22 48 10Z"/>
+    <path d="M22 36 34 48 22 60 10 48 22 36Z"/>
+    <path d="M74 36 86 48 74 60 62 48 74 36Z"/>
+    <path d="M48 62 60 74 48 86 36 74 48 62Z"/>
+    <path d="M48 34 62 48 48 62 34 48 48 34Z"/>
+    <path d="M36 22 22 36"/>
+    <path d="M60 22 74 36"/>
+    <path d="M22 60 36 74"/>
+    <path d="M74 60 60 74"/>
+    <path d="M34 48H22"/>
+    <path d="M62 48h12"/>
+    <path d="M48 34V22"/>
+    <path d="M48 62v12"/>
+  </g>
+</svg>

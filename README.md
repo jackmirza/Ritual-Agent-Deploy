@@ -35,39 +35,46 @@ Use a burner testnet wallet. Agent deposits are spent by scheduled runs over tim
 
 ## Run Locally
 
-Requires Node.js `20.19+` or `22.12+`. If your shell uses Node 16, switch first:
+Run the included static server:
 
 ```bash
-nvm install 22
-nvm use 22
-```
-
-```bash
-npm install
 npm start
 ```
 
-Then open the local Vite URL:
+Then open:
 
 ```text
 http://127.0.0.1:5173
 ```
 
-If that port is busy, Vite prints the next available URL.
+For source development, use Node.js `20.19+` or `22.12+`, then run:
+
+```bash
+npm install
+npm run dev
+```
 
 ## Build
 
+Building requires Node.js `20.19+` or `22.12+`.
+
 ```bash
+npm install
 npm run build
 ```
 
-The static build is written to `dist/`.
+The static build is written to `docs/` and is committed for simple Codespaces usage.
 
 ## Publish
 
-This folder can be published as a static site on GitHub Pages, Cloudflare Pages, Netlify, Vercel, or any regular web server.
+This repository can be published as a static site on GitHub Pages, Cloudflare Pages, Netlify, Vercel, or any regular web server.
 
-For GitHub Pages, this repository includes a workflow at `.github/workflows/pages.yml`. Enable Pages with **GitHub Actions** as the source, then push to `main`.
+For GitHub Pages, use branch publishing:
+
+1. Go to **Settings -> Pages**.
+2. Set source to **Deploy from a branch**.
+3. Select branch `main` and folder `/docs`.
+4. Save.
 
 ## How To Use
 
