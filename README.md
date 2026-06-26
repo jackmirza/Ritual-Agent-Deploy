@@ -35,6 +35,13 @@ Use a burner testnet wallet. Agent deposits are spent by scheduled runs over tim
 
 ## Run Locally
 
+Requires Node.js `20.19+` or `22.12+`. If your shell uses Node 16, switch first:
+
+```bash
+nvm install 22
+nvm use 22
+```
+
 ```bash
 npm install
 npm run dev
