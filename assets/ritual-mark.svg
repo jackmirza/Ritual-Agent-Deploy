@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Ritual Agent Builder">
+  <rect width="96" height="96" rx="18" fill="#151817"/>
+  <path d="M48 14 72 28v28L48 82 24 56V28L48 14Z" fill="#f6f7f4"/>
+  <path d="M48 24 63 33v18L48 68 33 51V33l15-9Z" fill="#151817"/>
+  <path d="M48 33 56 38v10l-8 10-8-10V38l8-5Z" fill="#e5484d"/>
+  <path d="M24 28 48 42l24-14" fill="none" stroke="#0f8b8d" stroke-width="5" stroke-linejoin="round"/>
+</svg>
+

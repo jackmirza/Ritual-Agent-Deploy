@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ritual Agent Builder</title>
+    <link rel="icon" href="./assets/ritual-mark.svg" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-label="Ritual agent builder">
+        <header class="topbar">
+          <div class="brand-row">
+            <img class="brand-logo" src="./assets/ritual-mark.svg" alt="" aria-hidden="true" />
+            <div>
+              <p class="eyebrow">Ritual testnet</p>
+              <h1>Agent Builder</h1>
+            </div>
+          </div>
+          <div class="wallet-actions">
+            <span class="status-pill" id="networkStatus">Not connected</span>
+            <a
+              class="secondary-button faucet-button"
+              href="https://faucet.ritualfoundation.org"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Faucet
+            </a>
+            <div class="wallet-menu-wrap">
+              <button class="primary-button wallet-button" id="connectButton" type="button">Connect Wallet</button>
+              <div class="wallet-menu" id="walletMenu" hidden>
+                <span class="wallet-menu-label">Connected wallet</span>
+                <strong class="wallet-menu-address" id="walletMenuAddress">-</strong>
+                <button class="menu-button" id="disconnectButton" type="button">Disconnect</button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="status-grid" aria-label="Wallet and agent status">
+          <div class="metric-panel">
+            <span class="metric-label">Wallet</span>
+            <strong class="metric-value address-value" id="walletAddress">-</strong>
+          </div>
+          <div class="metric-panel">
+            <span class="metric-label">Balance</span>
+            <strong class="metric-value" id="walletBalance">-</strong>
+          </div>
+          <div class="metric-panel">
+            <span class="metric-label">Agent state</span>
+            <strong class="metric-value" id="agentState">-</strong>
+          </div>
+        </section>
+
+        <nav class="task-tabs" aria-label="Task sections">
+          <button class="task-tab is-active" type="button" data-tool-tab="deploy">Deploy</button>
+          <button class="task-tab" type="button" data-tool-tab="manage">Manage</button>
+          <button class="task-tab" type="button" data-tool-tab="agents">Agents</button>
+        </nav>
+
+        <div class="tool-grid">
+          <section class="tool-panel tool-view is-active" id="deployPanel" aria-labelledby="deployTitle" data-tool-panel="deploy">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Deploy</p>
+                <h2 id="deployTitle">Sovereign Agent</h2>
+              </div>
+              <span class="chain-badge">Wallet signed</span>
+            </div>
+
+            <div class="form-grid">
+              <label class="input-row wide-row" for="promptInput">
+                <span>Prompt</span>
+                <textarea id="promptInput" rows="4">Say hello world</textarea>
+              </label>
+
+              <label class="input-row" for="modelInput">
+                <span>Model</span>
+                <input id="modelInput" type="text" value="zai-org/GLM-4.7-FP8" />
+              </label>
+
+              <label class="input-row" for="saltInput">
+                <span>Salt</span>
+                <input id="saltInput" type="text" value="my-ritual-agent-1" />
+              </label>
+
+              <label class="input-row" for="depositInput">
+                <span>Deposit</span>
+                <input id="depositInput" type="text" inputmode="decimal" value="0.015" />
+              </label>
+
+              <label class="input-row" for="cliTypeInput">
+                <span>Harness</span>
+                <select id="cliTypeInput">
+                  <option value="6" selected>ZeroClaw</option>
+                </select>
+              </label>
+
+              <label class="input-row" for="lockBlocksInput">
+                <span>Lock blocks</span>
+                <input id="lockBlocksInput" type="number" min="1" step="1" value="100000" />
+              </label>
+            </div>
+
+            <div class="summary-grid" aria-label="Deployment preview">
+              <div class="summary-line">
+                <span>Harness</span>
+                <strong id="harnessAddress">-</strong>
+              </div>
+              <div class="summary-line">
+                <span>Executor</span>
+                <strong id="executorAddress">-</strong>
+              </div>
+              <div class="summary-line">
+                <span>Agent balance</span>
+                <strong id="agentBalance">-</strong>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="secondary-button" id="previewButton" type="button">Preview</button>
+              <button class="primary-button" id="deployButton" type="button">Deploy + Arm</button>
+            </div>
+          </section>
+
+          <section class="tool-panel tool-view" id="managePanel" aria-labelledby="manageTitle" data-tool-panel="manage">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Manage</p>
+                <h2 id="manageTitle">Agent Controls</h2>
+              </div>
+              <span class="chain-badge warning">Gas required</span>
+            </div>
+
+            <label class="input-row address-row" for="targetAgentInput">
+              <span>Agent</span>
+              <input id="targetAgentInput" type="text" placeholder="0x..." />
+            </label>
+
+            <label class="input-row" for="topupInput">
+              <span>Top up</span>
+              <input id="topupInput" type="text" inputmode="decimal" value="0.015" />
+            </label>
+
+            <div class="summary-grid" aria-label="Selected agent status">
+              <div class="summary-line">
+                <span>Configured</span>
+                <strong id="configuredValue">-</strong>
+              </div>
+              <div class="summary-line">
+                <span>Wake mode</span>
+                <strong id="wakeModeValue">-</strong>
+              </div>
+              <div class="summary-line">
+                <span>Lock until</span>
+                <strong id="lockUntilValue">-</strong>
+              </div>
+            </div>
+
+            <div class="action-grid">
+              <button class="secondary-button" id="refreshTargetButton" type="button">Refresh</button>
+              <button class="secondary-button" id="topupButton" type="button">Top Up</button>
+              <button class="secondary-button" id="restartButton" type="button">Restart</button>
+              <button class="danger-button" id="stopButton" type="button">Stop</button>
+            </div>
+          </section>
+
+          <section class="tool-panel tool-view" id="agentsPanel" aria-labelledby="agentsTitle" data-tool-panel="agents">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Agents</p>
+                <h2 id="agentsTitle">Wallet Deployments</h2>
+              </div>
+              <button class="secondary-button compact-button" id="scanButton" type="button">Scan</button>
+            </div>
+
+            <div class="agent-list" id="agentsList" aria-live="polite"></div>
+          </section>
+        </div>
+
+        <section class="activity-panel" aria-labelledby="activityTitle">
+          <div class="panel-heading activity-heading">
+            <div>
+              <p class="eyebrow">Activity</p>
+              <h2 id="activityTitle">Transaction Log</h2>
+            </div>
+          </div>
+          <div class="activity-list" id="activityLog" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
