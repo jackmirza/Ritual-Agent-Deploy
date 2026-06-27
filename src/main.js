@@ -35,6 +35,8 @@ const DEPLOY_GAS = 3_500_000n;
 const STOP_GAS = 3_500_000n;
 const MIN_AGENT_DEPOSIT = parseEther("0.015");
 const DEFAULT_ENV_PAYLOAD = new TextEncoder().encode('{"LLM_PROVIDER":"ritual"}');
+const GAS_BUFFER_PERCENT = 120n;
+const ONE_GWEI = 1_000_000_000n;
 
 const state = {
   account: "",
@@ -186,13 +188,58 @@ function optionalValue(value) {
   return value > 0n ? quantity(value) : undefined;
 }
 
-async function withRitualGas(tx) {
-  const gasPrice = tx.gasPrice || (await rpcRequest("eth_gasPrice"));
-  const nextTx = {
-    ...tx,
-    gasPrice,
+function cleanTransaction(tx) {
+  return Object.fromEntries(Object.entries(tx).filter(([, value]) => value !== undefined));
+}
+
+function withoutFeeFields(tx) {
+  const { gasPrice, maxFeePerGas, maxPriorityFeePerGas, type, ...rest } = tx;
+  return rest;
+}
+
+async function estimateBufferedGas(tx) {
+  const cap = tx.gas ? hexToBigInt(tx.gas) : null;
+
+  try {
+    const estimateTx = cleanTransaction(withoutFeeFields(tx));
+    const estimate = hexToBigInt(await rpcRequest("eth_estimateGas", [estimateTx]));
+    const buffered = (estimate * GAS_BUFFER_PERCENT + 99n) / 100n;
+    return quantity(cap && buffered > cap ? cap : buffered);
+  } catch {
+    return tx.gas;
+  }
+}
+
+async function getEip1559Fees() {
+  const [gasPriceHex, priorityHex] = await Promise.all([
+    rpcRequest("eth_gasPrice"),
+    rpcRequest("eth_maxPriorityFeePerGas").catch(() => quantity(ONE_GWEI)),
+  ]);
+  const gasPrice = hexToBigInt(gasPriceHex);
+  const priority = hexToBigInt(priorityHex) || ONE_GWEI;
+
+  return {
+    maxFeePerGas: quantity(gasPrice + priority),
+    maxPriorityFeePerGas: quantity(priority),
   };
-  return Object.fromEntries(Object.entries(nextTx).filter(([, value]) => value !== undefined));
+}
+
+async function prepareRitualTransaction(tx, feeMode = "eip1559") {
+  const baseTx = cleanTransaction(withoutFeeFields(tx));
+  const gas = await estimateBufferedGas(baseTx);
+  const gasTx = cleanTransaction({ ...baseTx, gas });
+
+  if (feeMode === "legacy") {
+    return cleanTransaction({
+      ...gasTx,
+      gasPrice: await rpcRequest("eth_gasPrice"),
+    });
+  }
+
+  return cleanTransaction({
+    ...gasTx,
+    ...(await getEip1559Fees()),
+  });
 }
 
 function getConfig() {
@@ -590,23 +637,24 @@ async function describeFailedTransaction(txHash, tx, receipt) {
 
 async function sendTransaction(label, tx) {
   const item = logActivity(label, "Waiting for wallet confirmation");
-  const ritualTx = await withRitualGas(tx);
+  const eip1559Tx = await prepareRitualTransaction(tx, "eip1559");
+  let submittedTx = eip1559Tx;
   let txHash;
   try {
-    txHash = await walletRequest("eth_sendTransaction", [ritualTx]);
+    txHash = await walletRequest("eth_sendTransaction", [eip1559Tx]);
   } catch (error) {
-    if (error?.code !== -32603 || !ritualTx.gasPrice) {
+    if (error?.code !== -32603) {
       throw error;
     }
-    const fallbackTx = { ...ritualTx };
-    delete fallbackTx.gasPrice;
-    updateActivity(item, label, "Retrying as EIP-1559 transaction");
+    const fallbackTx = await prepareRitualTransaction(tx, "legacy");
+    submittedTx = fallbackTx;
+    updateActivity(item, label, "Retrying with legacy gas price");
     txHash = await walletRequest("eth_sendTransaction", [fallbackTx]);
   }
   updateActivity(item, label, txHash);
   const receipt = await waitForReceipt(txHash);
   if (receipt.status !== "0x1") {
-    const details = await describeFailedTransaction(txHash, ritualTx, receipt);
+    const details = await describeFailedTransaction(txHash, submittedTx, receipt);
     const message = details ? `${label} failed: ${txHash}\n${details}` : `${label} failed: ${txHash}`;
     updateActivity(item, `${label} failed`, details || txHash);
     throw new Error(message);
