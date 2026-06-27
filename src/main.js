@@ -188,10 +188,11 @@ function optionalValue(value) {
 
 async function withRitualGas(tx) {
   const gasPrice = tx.gasPrice || (await rpcRequest("eth_gasPrice"));
-  return {
+  const nextTx = {
     ...tx,
     gasPrice,
   };
+  return Object.fromEntries(Object.entries(nextTx).filter(([, value]) => value !== undefined));
 }
 
 function getConfig() {
