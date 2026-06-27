@@ -606,8 +606,9 @@ async function deployAndArm() {
     const preview = await previewAgent({ silent: true });
     if (!preview) return;
     const { harness, saltHash, config, agent } = preview;
+    const fundingWei = agent?.balanceWei >= MIN_AGENT_DEPOSIT ? 0n : config.depositWei;
 
-    if (state.balanceWei < config.depositWei) {
+    if (state.balanceWei < fundingWei) {
       throw new Error("Wallet balance is below the configured deposit.");
     }
     if (agent?.exists && agent.configured) {
@@ -616,7 +617,7 @@ async function deployAndArm() {
     }
 
     const ok = window.confirm(
-      `Deploy and arm this Ritual agent?\n\nHarness: ${harness}\nDeposit: ${formatRitual(config.depositWei)}`,
+      `Deploy and arm this Ritual agent?\n\nHarness: ${harness}\nDeposit: ${formatRitual(fundingWei)}`,
     );
     if (!ok) {
       return;
@@ -649,7 +650,7 @@ async function deployAndArm() {
         from: state.account,
         to: harness,
         data: calldata,
-        value: quantity(config.depositWei),
+        value: quantity(fundingWei),
         gas: quantity(SCHED_GAS),
       },
       "latest",
@@ -660,7 +661,7 @@ async function deployAndArm() {
       from: state.account,
       to: harness,
       data: calldata,
-      value: quantity(config.depositWei),
+      value: quantity(fundingWei),
       gas: quantity(SCHED_GAS),
     });
 
