@@ -30,7 +30,7 @@ const RITUAL_CHAIN = {
 
 const DELIVERY_SELECTOR = keccak256(new TextEncoder().encode("onSovereignAgentResult(bytes32,bytes)")).slice(0, 10);
 const EXPLORER_ADDRESS_BASE = "https://explorer.ritualfoundation.org/address";
-const SCHED_GAS = 7_000_000n;
+const SCHED_GAS = 12_000_000n;
 const DEPLOY_GAS = 3_500_000n;
 const STOP_GAS = 3_500_000n;
 const MIN_AGENT_DEPOSIT = parseEther("0.015");
@@ -180,6 +180,10 @@ function parsePositiveBigInt(value, label) {
 
 function quantity(value) {
   return numberToHex(value);
+}
+
+function optionalValue(value) {
+  return value > 0n ? quantity(value) : undefined;
 }
 
 async function withRitualGas(tx) {
@@ -650,7 +654,7 @@ async function deployAndArm() {
         from: state.account,
         to: harness,
         data: calldata,
-        value: quantity(fundingWei),
+        value: optionalValue(fundingWei),
         gas: quantity(SCHED_GAS),
       },
       "latest",
@@ -661,7 +665,7 @@ async function deployAndArm() {
       from: state.account,
       to: harness,
       data: calldata,
-      value: quantity(fundingWei),
+      value: optionalValue(fundingWei),
       gas: quantity(SCHED_GAS),
     });
 
