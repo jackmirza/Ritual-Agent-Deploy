@@ -591,7 +591,18 @@ async function describeFailedTransaction(txHash, tx, receipt) {
 async function sendTransaction(label, tx) {
   const item = logActivity(label, "Waiting for wallet confirmation");
   const ritualTx = await withRitualGas(tx);
-  const txHash = await walletRequest("eth_sendTransaction", [ritualTx]);
+  let txHash;
+  try {
+    txHash = await walletRequest("eth_sendTransaction", [ritualTx]);
+  } catch (error) {
+    if (error?.code !== -32603 || !ritualTx.gasPrice) {
+      throw error;
+    }
+    const fallbackTx = { ...ritualTx };
+    delete fallbackTx.gasPrice;
+    updateActivity(item, label, "Retrying as EIP-1559 transaction");
+    txHash = await walletRequest("eth_sendTransaction", [fallbackTx]);
+  }
   updateActivity(item, label, txHash);
   const receipt = await waitForReceipt(txHash);
   if (receipt.status !== "0x1") {
