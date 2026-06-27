@@ -30,7 +30,7 @@ const RITUAL_CHAIN = {
 
 const DELIVERY_SELECTOR = keccak256(new TextEncoder().encode("onSovereignAgentResult(bytes32,bytes)")).slice(0, 10);
 const EXPLORER_ADDRESS_BASE = "https://explorer.ritualfoundation.org/address";
-const SCHED_GAS = 5_000_000n;
+const SCHED_GAS = 7_000_000n;
 const DEPLOY_GAS = 3_500_000n;
 const STOP_GAS = 3_500_000n;
 const MIN_AGENT_DEPOSIT = parseEther("0.015");
@@ -935,7 +935,14 @@ function render() {
 }
 
 function showError(error) {
-  logActivity("Error", error?.message || String(error));
+  const details = [
+    error?.message,
+    error?.data?.message,
+    error?.data?.originalError?.message,
+    error?.cause?.message,
+    error?.code ? `code ${error.code}` : "",
+  ].filter(Boolean);
+  logActivity("Error", details.join(" | ") || String(error));
 }
 
 function bindUi() {
